@@ -33,19 +33,26 @@ def getArticle(url):
     article['img'] = []
     article['other'] = []
     
-    for div in html_content[0].find_all('div'):
+    div_list = html_content[0].find_all('div')
+    
+    # Avoid skipping interesting articles
+    if len(div_list) < 2:
+        div_list = html_content[0].find_all('p')
+    
+    if len(div_list) < 2:
+        div_list = html_content
+    
+    for div in div_list:
         text = div.get_text()
         if div.span and div.span.a:
             article['text'].append('![img](' + div.span.a.get('href') + ')')
-            article['img'].append(div.span.a.get('href'))
-        elif text:
+        
+        if text:
             article['text'].append(text)
-        else:
-            article['other'].append(div.span)
+
     
     for img in html_content[0].find_all('img'):
         article['text'].append('![img](' + img.get('src') + ')')
-        article['img'].append(img.get('src'))
       
     article['html'] = html_content
     # return the so creted article
@@ -72,7 +79,7 @@ def printArticle(article):
 def getMarkdownArticle(article):
     text = '##' + (article['title'][0].lstrip().rstrip()) + '\n'
     for p in article['text']:
-        text += p + '\n'
+        text += p + '\n\n'
     text += '*[original article](' + article['url'][0] + ')*' + '\n'
     text += '\n\n'
     
